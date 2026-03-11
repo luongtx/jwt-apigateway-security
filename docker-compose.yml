@@ -1,5 +1,10 @@
 version: "3.9"
 
+x-shared-env: &shared-env
+  DEBUG: ${DEBUG:-false}
+  JAVA_TOOL_OPTIONS: ${DEBUG:+-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005}
+  EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://swiggy-service-registry:8761/eureka/
+
 services:
   mysql:
     image: mysql:8.0
@@ -23,11 +28,13 @@ services:
     container_name: swiggy-service-registry
     ports:
       - "8761:8761"
+      - "5005:5005" # Debug port
     environment:
+      <<: *shared-env
       # Ensure the service binds to all interfaces inside the container
-      - SERVER_PORT=8761
-      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=false
-      - EUREKA_CLIENT_FETCH_REGISTRY=false
+      SERVER_PORT: 8761
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: false
+      EUREKA_CLIENT_FETCH_REGISTRY: false
     networks:
       - swiggy-net
 
@@ -39,9 +46,10 @@ services:
       - swiggy-service-registry
     ports:
       - "8080:8080"
+      - "5006:5005" # Debug port
     environment:
-      - SERVER_PORT=8080
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://swiggy-service-registry:8761/eureka/
+      <<: *shared-env
+      SERVER_PORT: 8080
       # If you use profiles or other env-based config, add them here
       # - SPRING_PROFILES_ACTIVE=docker
     networks:
@@ -56,13 +64,14 @@ services:
       - mysql
     ports:
       - "9898:9898"
+      - "5007:5005" # Debug port
     environment:
-      - SERVER_PORT=9898
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://swiggy-service-registry:8761/eureka/
+      <<: *shared-env
+      SERVER_PORT: 9898
       # Override DB connection to point at the mysql service container
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/javatechie
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=Password
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/javatechie
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Password
     networks:
       - swiggy-net
 
@@ -74,9 +83,10 @@ services:
       - swiggy-service-registry
     ports:
       - "8082:8082"
+      - "5008:5005" # Debug port
     environment:
-      - SERVER_PORT=8082
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://swiggy-service-registry:8761/eureka/
+      <<: *shared-env
+      SERVER_PORT: 8082
     networks:
       - swiggy-net
 
@@ -88,9 +98,10 @@ services:
       - swiggy-service-registry
     ports:
       - "8081:8081"
+      - "5009:5005" # Debug port
     environment:
-      - SERVER_PORT=8081
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://swiggy-service-registry:8761/eureka/
+      <<: *shared-env
+      SERVER_PORT: 8081
     networks:
       - swiggy-net
 
