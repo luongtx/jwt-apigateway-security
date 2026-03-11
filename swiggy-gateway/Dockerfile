@@ -10,8 +10,8 @@ RUN mvn -q -B clean package -DskipTests
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-COPY --from=build /app/target/swiggy-gateway-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /app/target/swiggy-gateway-0.0.1-SNAPSHOT.jar swiggy-gateway.jar
 
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+ENTRYPOINT ["java","-jar","/app/swiggy-gateway.jar"]
 

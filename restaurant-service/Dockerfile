@@ -10,8 +10,8 @@ RUN mvn -q -B clean package -DskipTests
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-COPY --from=build /app/target/restaurant-service-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /app/target/restaurant-service-0.0.1-SNAPSHOT.jar restaurant-service.jar
 
 EXPOSE 8082
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+ENTRYPOINT ["java","-jar","/app/restaurant-service.jar"]
 
