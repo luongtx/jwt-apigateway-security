@@ -1,0 +1,102 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      - MYSQL_DATABASE=javatechie
+      - MYSQL_ROOT_PASSWORD=Password
+      # Optionally create an app user instead of using root:
+      # - MYSQL_USER=appuser
+      # - MYSQL_PASSWORD=app-password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - swiggy-net
+
+  swiggy-service-registry:
+    build:
+      context: ./swiggy-service-registry
+    container_name: swiggy-service-registry
+    ports:
+      - "8761:8761"
+    environment:
+      # Ensure the service binds to all interfaces inside the container
+      - SERVER_PORT=8761
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=false
+      - EUREKA_CLIENT_FETCH_REGISTRY=false
+    networks:
+      - swiggy-net
+
+  swiggy-gateway:
+    build:
+      context: ./swiggy-gateway
+    container_name: swiggy-gateway
+    depends_on:
+      - swiggy-service-registry
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_PORT=8080
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://swiggy-service-registry:8761/eureka/
+      # If you use profiles or other env-based config, add them here
+      # - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - swiggy-net
+
+  identity-service:
+    build:
+      context: ./identity-service
+    container_name: identity-service
+    depends_on:
+      - swiggy-service-registry
+      - mysql
+    ports:
+      - "9898:9898"
+    environment:
+      - SERVER_PORT=9898
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://swiggy-service-registry:8761/eureka/
+      # Override DB connection to point at the mysql service container
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/javatechie
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=Password
+    networks:
+      - swiggy-net
+
+  restaurant-service:
+    build:
+      context: ./restaurant-service
+    container_name: restaurant-service
+    depends_on:
+      - swiggy-service-registry
+    ports:
+      - "8082:8082"
+    environment:
+      - SERVER_PORT=8082
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://swiggy-service-registry:8761/eureka/
+    networks:
+      - swiggy-net
+
+  swiggy-app:
+    build:
+      context: ./swiggy-app
+    container_name: swiggy-app
+    depends_on:
+      - swiggy-service-registry
+    ports:
+      - "8081:8081"
+    environment:
+      - SERVER_PORT=8081
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://swiggy-service-registry:8761/eureka/
+    networks:
+      - swiggy-net
+
+networks:
+  swiggy-net:
+    driver: bridge
+
+volumes:
+  mysql_data:
