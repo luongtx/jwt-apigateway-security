@@ -2,7 +2,11 @@ version: "3.9"
 
 x-shared-env: &shared-env
   DEBUG: ${DEBUG:-false}
-  JAVA_TOOL_OPTIONS: ${DEBUG:+-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005}
+  JDWP_PORT: ${JDWP_PORT:-5005}
+
+  JMC: ${JMC:-false}
+  JFR_PROFILE: ${JFR_PROFILE:-false}
+  JMX_HOSTNAME: ${JMX_HOSTNAME:-localhost}
   EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://swiggy-service-registry:8761/eureka/
 
 services:
@@ -24,13 +28,16 @@ services:
 
   swiggy-service-registry:
     build:
-      context: ./swiggy-service-registry
+      context: .
+      dockerfile: swiggy-service-registry/Dockerfile
     container_name: swiggy-service-registry
     ports:
       - "8761:8761"
       - "5005:5005" # Debug port
+      - "9011:9011" # JMC/JMX port
     environment:
       <<: *shared-env
+      JMX_PORT: 9011
       # Ensure the service binds to all interfaces inside the container
       SERVER_PORT: 8761
       EUREKA_CLIENT_REGISTER_WITH_EUREKA: false
@@ -40,15 +47,18 @@ services:
 
   swiggy-gateway:
     build:
-      context: ./swiggy-gateway
+      context: .
+      dockerfile: swiggy-gateway/Dockerfile
     container_name: swiggy-gateway
     depends_on:
       - swiggy-service-registry
     ports:
       - "8080:8080"
       - "5006:5005" # Debug port
+      - "9012:9012" # JMC/JMX port
     environment:
       <<: *shared-env
+      JMX_PORT: 9012
       SERVER_PORT: 8080
       # If you use profiles or other env-based config, add them here
       # - SPRING_PROFILES_ACTIVE=docker
@@ -57,7 +67,8 @@ services:
 
   identity-service:
     build:
-      context: ./identity-service
+      context: .
+      dockerfile: identity-service/Dockerfile
     container_name: identity-service
     depends_on:
       - swiggy-service-registry
@@ -65,8 +76,10 @@ services:
     ports:
       - "9898:9898"
       - "5007:5005" # Debug port
+      - "9013:9013" # JMC/JMX port
     environment:
       <<: *shared-env
+      JMX_PORT: 9013
       SERVER_PORT: 9898
       # Override DB connection to point at the mysql service container
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/javatechie
@@ -77,30 +90,36 @@ services:
 
   restaurant-service:
     build:
-      context: ./restaurant-service
+      context: .
+      dockerfile: restaurant-service/Dockerfile
     container_name: restaurant-service
     depends_on:
       - swiggy-service-registry
     ports:
       - "8082:8082"
       - "5008:5005" # Debug port
+      - "9014:9014" # JMC/JMX port
     environment:
       <<: *shared-env
+      JMX_PORT: 9014
       SERVER_PORT: 8082
     networks:
       - swiggy-net
 
   swiggy-app:
     build:
-      context: ./swiggy-app
+      context: .
+      dockerfile: swiggy-app/Dockerfile
     container_name: swiggy-app
     depends_on:
       - swiggy-service-registry
     ports:
       - "8081:8081"
       - "5009:5005" # Debug port
+      - "9015:9015" # JMC/JMX port
     environment:
       <<: *shared-env
+      JMX_PORT: 9015
       SERVER_PORT: 8081
     networks:
       - swiggy-net
