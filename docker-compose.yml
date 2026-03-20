@@ -1,5 +1,3 @@
-version: "3.9"
-
 x-shared-env: &shared-env
   DEBUG: ${DEBUG:-false}
   JDWP_PORT: ${JDWP_PORT:-5005}
@@ -23,8 +21,6 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-    networks:
-      - swiggy-net
 
   swiggy-service-registry:
     build:
@@ -42,8 +38,6 @@ services:
       SERVER_PORT: 8761
       EUREKA_CLIENT_REGISTER_WITH_EUREKA: false
       EUREKA_CLIENT_FETCH_REGISTRY: false
-    networks:
-      - swiggy-net
 
   swiggy-gateway:
     build:
@@ -62,8 +56,6 @@ services:
       SERVER_PORT: 8080
       # If you use profiles or other env-based config, add them here
       # - SPRING_PROFILES_ACTIVE=docker
-    networks:
-      - swiggy-net
 
   identity-service:
     build:
@@ -85,8 +77,6 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/javatechie
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: Password
-    networks:
-      - swiggy-net
 
   restaurant-service:
     build:
@@ -103,8 +93,6 @@ services:
       <<: *shared-env
       JMX_PORT: 9014
       SERVER_PORT: 8082
-    networks:
-      - swiggy-net
 
   swiggy-app:
     build:
@@ -121,12 +109,11 @@ services:
       <<: *shared-env
       JMX_PORT: 9015
       SERVER_PORT: 8081
-    networks:
-      - swiggy-net
 
 networks:
-  swiggy-net:
-    driver: bridge
-
+  default:
+    external: true
+    name: shared
 volumes:
   mysql_data:
+    external: true
