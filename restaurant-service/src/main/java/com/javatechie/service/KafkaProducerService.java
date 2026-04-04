@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Service
 public class KafkaProducerService {
 
@@ -14,6 +16,7 @@ public class KafkaProducerService {
     private static final String TOPIC = "order-topic";
 
     public void sendOrderEvent(OrderResponseDTO order) {
-        kafkaTemplate.send(TOPIC, order.getOrderId(), order);
+        String orderId = Objects.requireNonNull(order.getOrderId(), "OrderId cannot be null");
+        kafkaTemplate.send(TOPIC, orderId, order);
     }
 }
