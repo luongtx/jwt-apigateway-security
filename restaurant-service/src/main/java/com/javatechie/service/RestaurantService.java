@@ -14,6 +14,9 @@ public class RestaurantService {
     @Autowired
     private RestaurantOrderDAO orderDAO;
 
+    @Autowired
+    private KafkaProducerService kafkaProducerService;
+
     public String greeting() {
         return "Welcome to Swiggy Restaurant service";
     }
@@ -31,6 +34,7 @@ public class RestaurantService {
         response.setOrderDate(new Date());
         response.setStatus("CREATED");
         response.setEstimateDeliveryWindow(30);
+        kafkaProducerService.sendOrderEvent(response);
         return response;
     }
 }

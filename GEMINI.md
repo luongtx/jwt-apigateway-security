@@ -84,3 +84,9 @@ The Gateway routes requests based on path predicates defined in `swiggy-gateway/
 ### 3. Access Secured Service
 `GET /swiggy/order-id` or `GET /restaurant/orders/status/order-id`
 - **Header**: `Authorization: Bearer <JWT_TOKEN>`
+
+## Kafka Integration
+The system uses Kafka for event-driven communication.
+- **Broker**: `kafka:29092` (Internal), `localhost:9092` (External)
+- **Topic**: `order-topic`
+- **Producer**: `restaurant-service` sends an `OrderResponseDTO` event to `order-topic` whenever a new order is created.
