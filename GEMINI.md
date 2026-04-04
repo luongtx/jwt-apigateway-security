@@ -8,6 +8,7 @@ This project is a Java-based microservices application implementing the **API Ga
 - **`identity-service`**: Manages user registration and JWT generation using Spring Security and MySQL.
 - **`swiggy-service-registry`**: A Netflix Eureka server for service discovery.
 - **`restaurant-service` & `swiggy-app`**: Sample backend microservices that provide business functionality.
+- **`notification-service`**: Consumes order events from Kafka and simulates sending email, push, and SMS notifications.
 
 ## Tech Stack
 - **Language**: Java 17
