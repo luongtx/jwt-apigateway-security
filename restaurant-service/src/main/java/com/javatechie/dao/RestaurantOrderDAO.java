@@ -1,31 +1,50 @@
 package com.javatechie.dao;
 
 import com.javatechie.dto.OrderResponseDTO;
+import com.javatechie.entity.Order;
+import com.javatechie.repository.OrderRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 @Component
 public class RestaurantOrderDAO {
 
+    @Autowired
+    private OrderRepository orderRepository;
 
     public OrderResponseDTO getOrders(String orderId) {
-        return generateRandomOrders().get(orderId);
+        return orderRepository.findByOrderId(orderId)
+                .map(this::convertToDto)
+                .orElse(null);
     }
 
-    private Map<String, OrderResponseDTO> generateRandomOrders() {
-        Map<String, OrderResponseDTO> orderMap = new HashMap<>();
-        orderMap.put("35fds631", new OrderResponseDTO("35fds63", "VEG-MEALS", 1, 199, new Date(), "READY", 15));
-        orderMap.put("9u71245h", new OrderResponseDTO("9u71245h", "HYDERABADI DUM BIRYANI", 2, 641, new Date(), "PREPARING", 59));
-        orderMap.put("37jbd832", new OrderResponseDTO("37jbd832", "PANEER BUTTER MASALA", 1, 325, new Date(), "DELIVERED", 0));
-        return orderMap;
+    public OrderResponseDTO saveOrder(OrderResponseDTO orderResponseDTO) {
+        Order order = convertToEntity(orderResponseDTO);
+        Order savedOrder = orderRepository.save(order);
+        return convertToDto(savedOrder);
     }
 
-    public static void main(String[] args) {
-        System.out.println("hyderabadi dum biryani".toUpperCase());
+    private OrderResponseDTO convertToDto(Order order) {
+        return new OrderResponseDTO(
+                order.getOrderId(),
+                order.getName(),
+                order.getQty(),
+                order.getPrice(),
+                order.getOrderDate(),
+                order.getStatus(),
+                order.getEstimateDeliveryWindow()
+        );
     }
 
-
+    private Order convertToEntity(OrderResponseDTO orderResponseDTO) {
+        Order order = new Order();
+        order.setOrderId(orderResponseDTO.getOrderId());
+        order.setName(orderResponseDTO.getName());
+        order.setQty(orderResponseDTO.getQty());
+        order.setPrice(orderResponseDTO.getPrice());
+        order.setOrderDate(orderResponseDTO.getOrderDate());
+        order.setStatus(orderResponseDTO.getStatus());
+        order.setEstimateDeliveryWindow(orderResponseDTO.getEstimateDeliveryWindow());
+        return order;
+    }
 }

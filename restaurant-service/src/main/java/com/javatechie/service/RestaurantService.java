@@ -3,6 +3,9 @@ package com.javatechie.service;
 import com.javatechie.dao.RestaurantOrderDAO;
 import com.javatechie.dto.OrderRequestDTO;
 import com.javatechie.dto.OrderResponseDTO;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +28,7 @@ public class RestaurantService {
         return orderDAO.getOrders(orderId);
     }
 
+    @Transactional
     public OrderResponseDTO createOrder(OrderRequestDTO orderRequestDTO) {
         OrderResponseDTO response = new OrderResponseDTO();
         response.setOrderId(UUID.randomUUID().toString());
@@ -34,7 +38,13 @@ public class RestaurantService {
         response.setOrderDate(new Date());
         response.setStatus("CREATED");
         response.setEstimateDeliveryWindow(30);
-        kafkaProducerService.sendOrderEvent(response);
-        return response;
+
+        // Save order to database
+        OrderResponseDTO savedOrder = orderDAO.saveOrder(response);
+
+        // Send order event to Kafka
+        kafkaProducerService.sendOrderEvent(savedOrder);
+
+        return savedOrder;
     }
 }
