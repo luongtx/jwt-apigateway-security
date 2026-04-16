@@ -29,10 +29,10 @@ public class OutboxEventService {
 
         OutboxEvent event = new OutboxEvent();
         event.setAggregateType(AGGREGATE_TYPE_ORDER);
+        event.setAggregateId(orderResponse.getOrderId());
         event.setEventType(EVENT_TYPE_ORDER_CREATED);
         event.setPayload(payload);
         event.setCreatedAt(LocalDateTime.now());
-        event.setStatus(OutboxEvent.OutboxStatus.UNPUBLISHED);
 
         return outboxRepository.save(event);
     }
