@@ -14,6 +14,6 @@ COPY --from=build /app/target/notification-service-0.0.1-SNAPSHOT.jar notificati
 COPY docker/java-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
-EXPOSE 8083
+EXPOSE 8084
 ENV APP_JAR=/app/notification-service.jar
 ENTRYPOINT ["/docker-entrypoint.sh"]

@@ -30,7 +30,7 @@ public class RestaurantController {
     }
 
     @PostMapping("/orders/create")
-    public OrderResponseDTO createOrder(@RequestBody OrderRequestDTO orderRequestDTO) {
+    public OrderResponseDTO createOrder(@RequestBody OrderRequestDTO orderRequestDTO) throws Exception {
         return service.createOrder(orderRequestDTO);
     }
 }

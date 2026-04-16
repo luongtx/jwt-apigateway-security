@@ -11,12 +11,17 @@ services:
   mysql:
     image: mysql:8.0
     container_name: mysql
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --binlog-format=ROW
+      --log-bin=mysql-bin
+      --binlog-row-image=FULL
+      --gtid-mode=ON
+      --enforce-gtid-consistency=ON
+      --server-id=1
     environment:
       - MYSQL_DATABASE=javatechie
       - MYSQL_ROOT_PASSWORD=Password
-      # Optionally create an app user instead of using root:
-      # - MYSQL_USER=appuser
-      # - MYSQL_PASSWORD=app-password
     ports:
       - "3306:3306"
     volumes:
@@ -108,6 +113,23 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
 
+  kafka-connect:
+    image: debezium/connect:2.4
+    container_name: kafka-connect
+    depends_on:
+      - kafka
+      - zookeeper
+    ports:
+      - "8083:8083"
+    environment:
+      BOOTSTRAP_SERVERS: kafka:29092
+      GROUP_ID: debezium-group
+      CONFIG_STORAGE_TOPIC: _debezium_connect_configs
+      OFFSET_STORAGE_TOPIC: _debezium_connect_offsets
+      STATUS_STORAGE_TOPIC: _debezium_connect_statuses
+      KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+
   kafka:
     image: confluentinc/cp-kafka:7.3.0
     container_name: kafka
@@ -132,11 +154,11 @@ services:
       - swiggy-service-registry
       - kafka
     ports:
-      - "8083:8083"
+      - "8084:8084"
     environment:
       <<: *shared-env
       JMX_PORT: 9016
-      SERVER_PORT: 8083
+      SERVER_PORT: 8084
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
 
   swiggy-app:

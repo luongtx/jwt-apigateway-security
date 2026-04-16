@@ -2,7 +2,6 @@ spring:
   application:
     name: IDENTITY-SERVICE
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/javatechie
     username: root
     password: Password
@@ -13,7 +12,7 @@ spring:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL5Dialect
+        dialect: org.hibernate.dialect.MySQLDialect
 
 eureka:
   client:

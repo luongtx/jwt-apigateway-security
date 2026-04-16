@@ -18,7 +18,7 @@ public class RestaurantService {
     private RestaurantOrderDAO orderDAO;
 
     @Autowired
-    private KafkaProducerService kafkaProducerService;
+    private OutboxEventService outboxEventService;
 
     public String greeting() {
         return "Welcome to Swiggy Restaurant service";
@@ -29,7 +29,7 @@ public class RestaurantService {
     }
 
     @Transactional
-    public OrderResponseDTO createOrder(OrderRequestDTO orderRequestDTO) {
+    public OrderResponseDTO createOrder(OrderRequestDTO orderRequestDTO) throws Exception {
         OrderResponseDTO response = new OrderResponseDTO();
         response.setOrderId(UUID.randomUUID().toString());
         response.setName(orderRequestDTO.getName());
@@ -39,11 +39,11 @@ public class RestaurantService {
         response.setStatus("CREATED");
         response.setEstimateDeliveryWindow(30);
 
-        // Save order to database
+        // Save order to database (same transaction)
         OrderResponseDTO savedOrder = orderDAO.saveOrder(response);
 
-        // Send order event to Kafka
-        kafkaProducerService.sendOrderEvent(savedOrder);
+        // Write outbox event (same transaction as order)
+        outboxEventService.createOutboxEvent(savedOrder);
 
         return savedOrder;
     }
